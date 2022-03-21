@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkup Guide</title>
+    <!--Font-awesome (cdnjs.com) add-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
+        integrity="sha512-10/jx2EXwxxWqCLX/hHth/vu2KY3jCF70dCQB8TSgNjbCVAC/8vai53GfMDrO2Emgwccf2pJqxct9ehpzG+MTw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!--getskeleton.com css add-->
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/skeleton.css">
+    <!--main css add-->
+    <link rel="stylesheet" href="css/sytle.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Guide App</h1>
+
+        <div class="bilgi bilgi--success">Success</div>
+        <div class="bilgi bilgi--error">Error</div>
+        <form id="form-rehber">
+            <div>
+                <label for="ad">Name</label>
+                <input type="text" id="ad" class="u-full-width">
+            </div>
+            <div>
+                <label for="soyad">Surname</label>
+                <input type="text" id="soyad" class="u-full-width">
+            </div>
+            <div>
+                <label for="soyad">Email</label>
+                <input type="text" id="mail" class="u-full-width">
+            </div>
+            <div>
+                <input class="button-primary u-full-width" type="submit" value="Submit">
+            </div>
+        </form>
+
+        <hr>
+        <table class="u-full-width">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>Email</th>
+                    <th>Process</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th>Cekap</th>
+                    <th>Yakup</th>
+                    <th>cekapcheck@gmail.com</th>
+                    <th>
+                        <button  class="btn btn--edit">
+                            <i class="fa-solid fa-edit"></i>
+                        </button>
+                        <button class="btn btn--delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </th>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
