@@ -4,9 +4,13 @@ const soyad = document.getElementById("soyad");
 const mail = document.getElementById("mail");
 
 const form = document.getElementById("form-rehber");
+const kisiListesi = document.querySelector(".kisi-listesi");
 
 //Event-listenerlarin tanımlanması
 form.addEventListener("submit", kaydet);
+
+//Tüm kişileri sonra localhosta kaydetebilmek için oluşturulacak dizi
+const tumKisilerDizisi = [];
 
 function kaydet(e){
     e.preventDefault();
@@ -17,7 +21,7 @@ function kaydet(e){
     }
     const sonuc = verileriKontrolEt(eklenecekKisi);
     if(sonuc.durum){
-        bilgiOlustur(sonuc.mesaj,sonuc.durum);
+        kisiyiEkle(eklenecekKisi);
     }else{
         bilgiOlustur(sonuc.mesaj,sonuc.durum)
     }
@@ -34,9 +38,11 @@ function verileriKontrolEt(kisi){
             }
         }
     }
+    alanlarıTemizle();
     return{
         durum:true,
         mesaj: `Kaydedildi`,
+
     }
 }
 
@@ -48,4 +54,37 @@ function bilgiOlustur(mesaj,durum){
 
     olusturulanBilgi.classList.add(durum ? "bilgi--success" : "bilgi--error")
     document.querySelector(".container").insertBefore(olusturulanBilgi,form);
+
+    setTimeout(function(){
+        const silinecekDiv = document.querySelector(".bilgi");
+        if(silinecekDiv){
+            silinecekDiv.remove();
+        }
+    },2000);
+}
+
+function alanlarıTemizle(){
+    ad.value = "";
+    soyad.value="";
+    mail.value="";
+}
+
+function kisiyiEkle(eklenecekKisi){
+    const olusturulanTrElementi = document.createElement("tr");
+    olusturulanTrElementi.innerHTML = `<td>${eklenecekKisi.ad}</td>
+    <td>${eklenecekKisi.soyad}</td>
+    <td>${eklenecekKisi.mail}</td>
+    <td>
+        <button  class="btn btn--edit">
+            <i class="fa-solid fa-edit"></i>
+        </button>
+        <button class="btn btn--delete">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    </td>`;
+    kisiListesi.appendChild(olusturulanTrElementi);
+    tumKisilerDizisi.push(eklenecekKisi);
+    bilgiOlustur("Kişi rehbere kaydedildi" ,true)
+
+
 }
