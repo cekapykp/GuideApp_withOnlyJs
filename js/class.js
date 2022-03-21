@@ -28,9 +28,37 @@ class Ekran {
         this.form = document.getElementById("form-rehber").addEventListener("submit", this.kaydetGuncelle.bind(this));
 
         this.kisiListesi = document.querySelector(".kisi-listesi");
+        this.kisiListesi.addEventListener("click", this.guncelleVeyaSil.bind(this));
         this.depo = new Depo();
+
+        this.secilenSatir = undefined;
         this.kisilerEkranaYazdir();
     }
+
+    alanlariTemizle(){
+        this.ad.value = ``;
+        this.soyad.value = ``;
+        this.mail.value = ``;
+    }
+
+     guncelleVeyaSil(e){
+         const tiklanmaYeri = e.target;
+         if(tiklanmaYeri.classList.contains("btn--delete")){
+            this.secilenSatir = tiklanmaYeri.parentElement.parentElement;
+            this.kisiyiEkrandanSil();
+         }else if( tiklanmaYeri.classList.contains("btn--edit")){
+            
+         }
+         console.log(this)
+     }
+
+     kisiyiEkrandanSil(){
+         this.secilenSatir.remove();
+         const silinecekMail = this.secilenSatir.cells[2].textContent;
+
+         this.depo.kisiSil(silinecekMail);
+         this.alanlariTemizle();
+     }
 
     kisilerEkranaYazdir() {
         this.depo.tumKisiler.forEach(kisi => {
@@ -67,6 +95,7 @@ class Ekran {
 
             //yeni kişiyi ekrana ekler - localstorage
             this.depo.kisiEkle(kisi)
+            this.alanlariTemizle();
         } else {
             //console.log("Boş Alan Var");
 
@@ -90,9 +119,26 @@ class Depo {
     }
 
     kisiEkle(kisi) {
-        const tumKisilerLocal = this.kisileriGetir();
-        tumKisilerLocal.push(kisi);
-        localStorage.setItem("tumKisiler" , JSON.stringify(tumKisilerLocal));
+        this.tumKisiler.push(kisi);
+        localStorage.setItem("tumKisiler" , JSON.stringify(this.tumKisiler));
+    }
+
+    kisiSil(mail){
+        this.tumKisiler.forEach((kisi,index) => {
+            if(kisi.mail === mail){
+                this.tumKisiler.splice(index,1)
+            }
+        });
+        localStorage.setItem("tumKisiler" , JSON.stringify(this.tumKisiler));
+    }
+
+    kisiGuncelle(guncellenmisKisi , mail){
+        this.tumKisiler.forEach((kisi,index) => {
+            if(kisi.mail === mail){
+                this.tumKisiler[index] = guncellenmisKisi;
+            }
+        });
+        localStorage.setItem("tumKisiler" , JSON.stringify(this.tumKisiler));
     }
 }
 
