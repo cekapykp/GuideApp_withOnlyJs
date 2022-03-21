@@ -25,7 +25,9 @@ class Ekran {
         this.soyad = document.getElementById("soyad");
         this.mail = document.getElementById("mail");
         this.ekleGuncelleButton = document.querySelector(".kaydetGuncelle");
-        this.form = document.getElementById("form-rehber").addEventListener("submit", this.kaydetGuncelle.bind(this));
+
+        this.form = document.getElementById("form-rehber");
+        this.form.addEventListener("submit", this.kaydetGuncelle.bind(this));
 
         this.kisiListesi = document.querySelector(".kisi-listesi");
         this.kisiListesi.addEventListener("click", this.guncelleVeyaSil.bind(this));
@@ -34,31 +36,84 @@ class Ekran {
         this.secilenSatir = undefined;
         this.kisilerEkranaYazdir();
     }
+    bilgiOlustur(mesaj, durum) {
+        const uyariDivi = document.querySelector(".bilgi");
 
-    alanlariTemizle(){
+        uyariDivi.innerHTML = mesaj;
+
+        uyariDivi.classList.add(durum ? "bilgi--success" : "bilgi--error");
+
+
+        setTimeout(function () {
+            uyariDivi.className = "bilgi";
+        }, 2000);
+    }
+
+    kaydetGuncelle(e) {
+        e.preventDefault();
+        const kisi = new Kisi(this.ad.value, this.soyad.value, this.mail.value);
+        const sonuc = Util.bosAlanKontrolEt(kisi.ad, kisi.soyad, kisi.mail);
+
+        //Tüm aalanlar kontrol - dolu mu boş var mı
+        if (sonuc) {
+
+            if (this.secilenSatir) {
+                this.kisiyiEkrandanGuncelle(kisi);
+            } else {
+                this.bilgiOlustur("Success",true)
+
+                this.kisiyiEkranaEkle(kisi);
+                this.depo.kisiEkle(kisi)
+            }
+
+
+            this.alanlariTemizle();
+        } else {
+            this.bilgiOlustur("Error",false)
+        }
+    }
+
+    alanlariTemizle() {
         this.ad.value = ``;
         this.soyad.value = ``;
         this.mail.value = ``;
     }
 
-     guncelleVeyaSil(e){
-         const tiklanmaYeri = e.target;
-         if(tiklanmaYeri.classList.contains("btn--delete")){
+    guncelleVeyaSil(e) {
+        const tiklanmaYeri = e.target;
+        if (tiklanmaYeri.classList.contains("btn--delete")) {
             this.secilenSatir = tiklanmaYeri.parentElement.parentElement;
             this.kisiyiEkrandanSil();
-         }else if( tiklanmaYeri.classList.contains("btn--edit")){
-            
-         }
-         console.log(this)
-     }
+        } else if (tiklanmaYeri.classList.contains("btn--edit")) {
+            this.ekleGuncelleButton.value = "Edit";
+            this.secilenSatir = tiklanmaYeri.parentElement.parentElement;
+            this.ad.value = this.secilenSatir.cells[0].textContent;
+            this.soyad.value = this.secilenSatir.cells[1].textContent;
+            this.mail.value = this.secilenSatir.cells[2].textContent;
+        }
+    }
 
-     kisiyiEkrandanSil(){
-         this.secilenSatir.remove();
-         const silinecekMail = this.secilenSatir.cells[2].textContent;
+    kisiyiEkrandanGuncelle(kisi) {
+        this.depo.kisiGuncelle(kisi, this.secilenSatir.cells[2].textContent);
 
-         this.depo.kisiSil(silinecekMail);
-         this.alanlariTemizle();
-     }
+        this.secilenSatir.cells[0].textContent = kisi.ad;
+        this.secilenSatir.cells[1].textContent = kisi.soyad;
+        this.secilenSatir.cells[2].textContent = kisi.mail;
+
+        this.alanlariTemizle();
+        this.secilenSatir = undefined;
+        this.ekleGuncelleButton.value = "Submit";
+
+    }
+
+    kisiyiEkrandanSil() {
+        this.secilenSatir.remove();
+        const silinecekMail = this.secilenSatir.cells[2].textContent;
+
+        this.depo.kisiSil(silinecekMail);
+        this.alanlariTemizle();
+        this.secilenSatir = undefined;
+    }
 
     kisilerEkranaYazdir() {
         this.depo.tumKisiler.forEach(kisi => {
@@ -80,27 +135,9 @@ class Ekran {
             </button>
         </td>`;
         this.kisiListesi.appendChild(olusturlanTR);
-
     }
 
-    kaydetGuncelle(e) {
-        e.preventDefault();
-        const kisi = new Kisi(this.ad.value, this.soyad.value, this.mail.value);
-        const sonuc = Util.bosAlanKontrolEt(kisi.ad, kisi.soyad, kisi.mail);
 
-        //Tüm aalanlar kontrol - dolu mu boş var mı
-        if (sonuc) {
-            //console.log("Başarılı");
-            this.kisiyiEkranaEkle(kisi);
-
-            //yeni kişiyi ekrana ekler - localstorage
-            this.depo.kisiEkle(kisi)
-            this.alanlariTemizle();
-        } else {
-            //console.log("Boş Alan Var");
-
-        }
-    }
 }
 
 class Depo {
@@ -120,25 +157,25 @@ class Depo {
 
     kisiEkle(kisi) {
         this.tumKisiler.push(kisi);
-        localStorage.setItem("tumKisiler" , JSON.stringify(this.tumKisiler));
+        localStorage.setItem("tumKisiler", JSON.stringify(this.tumKisiler));
     }
 
-    kisiSil(mail){
-        this.tumKisiler.forEach((kisi,index) => {
-            if(kisi.mail === mail){
-                this.tumKisiler.splice(index,1)
+    kisiSil(mail) {
+        this.tumKisiler.forEach((kisi, index) => {
+            if (kisi.mail === mail) {
+                this.tumKisiler.splice(index, 1)
             }
         });
-        localStorage.setItem("tumKisiler" , JSON.stringify(this.tumKisiler));
+        localStorage.setItem("tumKisiler", JSON.stringify(this.tumKisiler));
     }
 
-    kisiGuncelle(guncellenmisKisi , mail){
-        this.tumKisiler.forEach((kisi,index) => {
-            if(kisi.mail === mail){
+    kisiGuncelle(guncellenmisKisi, mail) {
+        this.tumKisiler.forEach((kisi, index) => {
+            if (kisi.mail === mail) {
                 this.tumKisiler[index] = guncellenmisKisi;
             }
         });
-        localStorage.setItem("tumKisiler" , JSON.stringify(this.tumKisiler));
+        localStorage.setItem("tumKisiler", JSON.stringify(this.tumKisiler));
     }
 }
 
