@@ -17,6 +17,14 @@ class Util { //Yararlı fonksiyonları içeren fonksiyon
         });
         return sonuc;
     }
+
+    static emailGecerliMi = (email) => {
+        return String(email)
+            .toLowerCase()
+            .match(
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            );
+    };
 }
 
 class Ekran {
@@ -53,23 +61,34 @@ class Ekran {
         e.preventDefault();
         const kisi = new Kisi(this.ad.value, this.soyad.value, this.mail.value);
         const sonuc = Util.bosAlanKontrolEt(kisi.ad, kisi.soyad, kisi.mail);
+        const emailGecerliMi = Util.emailGecerliMi(this.mail.value);
+        console.log(this.mail.value + "email check for" + emailGecerliMi);
 
         //Tüm aalanlar kontrol - dolu mu boş var mı
         if (sonuc) {
 
+            if (!emailGecerliMi) {
+                this.bilgiOlustur("Write a valid email", false);
+                return;
+            }
+
             if (this.secilenSatir) {
                 this.kisiyiEkrandanGuncelle(kisi);
             } else {
-                this.bilgiOlustur("Success",true)
 
-                this.kisiyiEkranaEkle(kisi);
-                this.depo.kisiEkle(kisi)
+                const sonuc = this.depo.kisiEkle(kisi);
+                console.log("result : " + sonuc + " za")
+                if (sonuc) {
+                    this.bilgiOlustur("Success", true);
+                    this.kisiyiEkranaEkle(kisi);
+                    this.alanlariTemizle();
+                } else {
+                    this.bilgiOlustur("Being used", false);
+                }
             }
 
-
-            this.alanlariTemizle();
         } else {
-            this.bilgiOlustur("Error",false)
+            this.bilgiOlustur("Error", false)
         }
     }
 
@@ -94,15 +113,22 @@ class Ekran {
     }
 
     kisiyiEkrandanGuncelle(kisi) {
-        this.depo.kisiGuncelle(kisi, this.secilenSatir.cells[2].textContent);
 
-        this.secilenSatir.cells[0].textContent = kisi.ad;
-        this.secilenSatir.cells[1].textContent = kisi.soyad;
-        this.secilenSatir.cells[2].textContent = kisi.mail;
+        const sonuc = this.depo.kisiGuncelle(kisi, this.secilenSatir.cells[2].textContent);
 
-        this.alanlariTemizle();
-        this.secilenSatir = undefined;
-        this.ekleGuncelleButton.value = "Submit";
+        if (sonuc) {
+            this.secilenSatir.cells[0].textContent = kisi.ad;
+            this.secilenSatir.cells[1].textContent = kisi.soyad;
+            this.secilenSatir.cells[2].textContent = kisi.mail;
+
+            this.alanlariTemizle();
+            this.secilenSatir = undefined;
+            this.ekleGuncelleButton.value = "Submit";
+            this.bilgiOlustur("Person updated", true)
+
+        } else {
+            this.bilgiOlustur("Being used",false)
+        }
 
     }
 
@@ -113,6 +139,8 @@ class Ekran {
         this.depo.kisiSil(silinecekMail);
         this.alanlariTemizle();
         this.secilenSatir = undefined;
+
+        this.bilgiOlustur("Contact deleted from contacts", true)
     }
 
     kisilerEkranaYazdir() {
@@ -144,6 +172,21 @@ class Depo {
     constructor() {
         this.tumKisiler = this.kisileriGetir(); //Bu deponun geçtiği her yerde geçerli
     }
+
+    emailEssizMi(mail) {
+        const sonuc = this.tumKisiler.find(kisi => {
+            return kisi.mail === mail;
+        });
+        //Bu maili kullanan biri var
+        if (sonuc) {
+            console.log(mail + "being used")
+            return false;
+        } else {
+            console.log(mail + "free")
+            return true;
+        }
+    }
+
     //Uygulama ilk açıldığında veriler getirilecektir.
     kisileriGetir() {
         let tumKisilerLocal;
@@ -156,8 +199,16 @@ class Depo {
     }
 
     kisiEkle(kisi) {
-        this.tumKisiler.push(kisi);
-        localStorage.setItem("tumKisiler", JSON.stringify(this.tumKisiler));
+        if (this.emailEssizMi(kisi.mail)) {
+            this.tumKisiler.push(kisi);
+            localStorage.setItem("tumKisiler", JSON.stringify(this.tumKisiler));
+            return true;
+        } else {
+            return false;
+        }
+
+
+
     }
 
     kisiSil(mail) {
@@ -169,13 +220,35 @@ class Depo {
         localStorage.setItem("tumKisiler", JSON.stringify(this.tumKisiler));
     }
 
+    //Güncellenmiş kişi yeni değerleri içerir. Mail kişinin bulunması için veri tabanında gerekli olan eski mailini içerir.
     kisiGuncelle(guncellenmisKisi, mail) {
-        this.tumKisiler.forEach((kisi, index) => {
-            if (kisi.mail === mail) {
-                this.tumKisiler[index] = guncellenmisKisi;
-            }
-        });
-        localStorage.setItem("tumKisiler", JSON.stringify(this.tumKisiler));
+
+        if(this.guncellenmisKisi.mail === mail){
+            this.tumKisiler.forEach((kisi, index) => {
+                if (kisi.mail === mail) {
+                    this.tumKisiler[index] = guncellenmisKisi;
+                    localStorage.setItem("tumKisiler", JSON.stringify(this.tumKisiler));
+                    return true;
+                }
+            });
+            return true;
+        }
+
+        if (this.emailEssizMi(guncellenmisKisi.mail)) {
+            this.tumKisiler.forEach((kisi, index) => {
+                if (kisi.mail === mail) {
+                    this.tumKisiler[index] = guncellenmisKisi;
+                    localStorage.setItem("tumKisiler", JSON.stringify(this.tumKisiler));
+                    return true;
+                }
+            });
+            return true;
+
+        } else {
+            return false;
+        }
+
+
     }
 }
 
