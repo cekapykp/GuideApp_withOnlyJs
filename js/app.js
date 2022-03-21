@@ -37,7 +37,7 @@ function kaydet(e) {
 function verileriKontrolEt(kisi) {
     for (const deger in kisi) {
         if (kisi[deger]) {
-            console.log(kisi[deger]);
+            //console.log(kisi[deger]);
         } else {
             return {
                 durum: false,
