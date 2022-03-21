@@ -24,3 +24,7 @@
     border: 1px solid red;
     color: red;
 }
+
+.fa-solid{
+    pointer-events: none;
+}
